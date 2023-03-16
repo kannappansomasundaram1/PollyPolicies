@@ -1,9 +1,8 @@
-﻿var tasks = Enumerable.Range(0,100).Select(async numb => await Map(numb)).ToArray();
-
-var vortexEventWrappers = new List<string>();
+﻿var vortexEventWrappers = new List<string>();
 var batchSize = 20; 
-var mappedTasks = tasks.Chunk(batchSize).ToArray();
-foreach (var vortexEventsBatchTasks in mappedTasks)
+
+var tasks = Enumerable.Range(0,100).Select(numb => Map(numb)).Chunk(batchSize);
+foreach (var vortexEventsBatchTasks in tasks)
 {
     var mappedString = (await Task.WhenAll(vortexEventsBatchTasks)).Where(t => t != null).ToList();
     vortexEventWrappers.AddRange(mappedString);
