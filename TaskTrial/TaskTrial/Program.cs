@@ -1,14 +1,25 @@
-﻿var vortexEventWrappers = new List<string>();
+﻿var mappedStrings = new List<string>();
 var batchSize = 20; 
+Console.WriteLine("Creating Tasks without calling mapper");
+//Bad - ToArray() AfterSelect
+// var tasks = Enumerable.Range(0,100).Select(Map).ToArray().Chunk(batchSize);
 
-var tasks = Enumerable.Range(0,100).Select(Map).Chunk(batchSize);
-foreach (var vortexEventsBatchTasks in tasks)
+//Bad - ToArray() After Chunk
+var tasks = Enumerable.Range(0,100).Select(Map).Chunk(batchSize).ToArray();
+
+//Good
+// var tasks = Enumerable.Range(0,100).Select(Map).Chunk(batchSize);
+
+Console.WriteLine("Executing Calls in batches");
+foreach (var taskBatch in tasks)
 {
-    var mappedString = (await Task.WhenAll(vortexEventsBatchTasks)).Where(t => t != null).ToList();
-    vortexEventWrappers.AddRange(mappedString);
+    var mappedString = (await Task.WhenAll(taskBatch))
+        .ToList();
+    mappedStrings.AddRange(mappedString);
 }
 
-Console.WriteLine(vortexEventWrappers.Aggregate((a, b) => $"{a},{b}"));
+Console.WriteLine(mappedStrings.Aggregate((a, b) => $"{a},{b}"));
+
 static async Task<string> Map(int i)
 {
     await Task.Delay(0);
